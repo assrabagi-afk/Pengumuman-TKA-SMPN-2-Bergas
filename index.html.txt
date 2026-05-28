@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengumuman TKA - SMPN 2 Bergas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+            min-height: 100vh;
+        }
+        .blue-gradient {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-md">
+        <!-- Header -->
+        <div class="text-center mb-8 animate__animated animate__fadeInDown">
+            <img src="https://iili.io/C25T3Q4.png" alt="Logo SMPN 2 Bergas" class="w-24 h-24 mx-auto mb-4 drop-shadow-lg">
+            <h1 class="text-2xl font-bold text-blue-900">SMP NEGERI 2 BERGAS</h1>
+            <p class="text-blue-600 font-medium">Pengumuman Hasil TKA TA 2025/2026</p>
+        </div>
+
+        <!-- Login Card -->
+        <div id="loginSection" class="glass-card rounded-2xl shadow-2xl p-8 animate__animated animate__zoomIn">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">Login Siswa</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NISN</label>
+                    <input type="text" id="nisnInput" placeholder="Masukkan 10 digit NISN" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir (DDMM)</label>
+                    <input type="password" id="dobInput" placeholder="Contoh: 0211" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+                    <p class="text-xs text-gray-500 mt-1">*Format: Tanggal & Bulan (4 digit)</p>
+                </div>
+                <button onclick="handleLogin()" id="loginBtn"
+                    class="w-full blue-gradient text-white font-bold py-3 rounded-xl hover:opacity-90 transform transition-active active:scale-95 shadow-lg">
+                    Cek Hasil Sekarang
+                </button>
+            </div>
+            <div id="errorMsg" class="hidden mt-4 text-red-500 text-sm text-center font-medium"></div>
+        </div>
+
+        <!-- Result Card (Hidden by default) -->
+        <div id="resultSection" class="hidden glass-card rounded-2xl shadow-2xl p-8 animate__animated animate__fadeInUp">
+            <div class="text-center mb-6">
+                <div class="inline-block p-2 bg-green-100 rounded-full mb-2">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800" id="resNama">-</h2>
+                <p class="text-gray-500" id="resNisn">-</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-4 bg-blue-50 rounded-xl">
+                    <span class="font-medium text-blue-800">Matematika</span>
+                    <span class="text-xl font-bold text-blue-900" id="resMat">-</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-blue-50 rounded-xl">
+                    <span class="font-medium text-blue-800">Bahasa Indonesia</span>
+                    <span class="text-xl font-bold text-blue-900" id="resIndo">-</span>
+                </div>
+                <div class="flex justify-between items-center p-4 blue-gradient rounded-xl text-white shadow-md">
+                    <span class="font-bold">RATA-RATA</span>
+                    <span class="text-2xl font-black" id="resRata">-</span>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" 
+                class="mt-8 w-full border-2 border-blue-600 text-blue-600 font-bold py-2 rounded-xl hover:bg-blue-50 transition-colors">
+                Kembali
+            </button>
+        </div>
+
+        <footer class="mt-8 text-center text-gray-400 text-xs">
+            &copy; 2026 Tim IT SMP Negeri 2 Bergas. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        const API_URL = 'https://gist.githubusercontent.com/assrabagi-afk/896d7730bbed8f1da5665a7913a89f2a/raw/8ae161d4edc2a04f792673ffc8d6423c6a0343e9/gistfile1.txt';
+
+        async function handleLogin() {
+            const nisnInput = document.getElementById('nisnInput').value;
+            const dobInput = document.getElementById('dobInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const loginBtn = document.getElementById('loginBtn');
+
+            if (!nisnInput || !dobInput) {
+                showError("Harap isi semua kolom!");
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.innerText = "Memproses...";
+
+            try {
+                const response = await fetch(API_URL);
+                const rawData = await response.text();
+                
+                // Parsing CSV-like data
+                const lines = rawData.trim().split('\n');
+                const students = lines.slice(1).map(line => {
+                    const [dob, nisn, nama, mat, indo, rata] = line.split(';');
+                    return { dob, nisn, nama, mat, indo, rata };
+                });
+
+                const student = students.find(s => s.nisn === nisnInput && s.dob === dobInput);
+
+                if (student) {
+                    showResult(student);
+                } else {
+                    showError("Data tidak ditemukan. Cek kembali NISN dan Tanggal Lahir.");
+                }
+            } catch (error) {
+                showError("Gagal mengambil data. Coba lagi nanti.");
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerText = "Cek Hasil Sekarang";
+            }
+        }
+
+        function showError(msg) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.innerText = msg;
+            errorMsg.classList.remove('hidden');
+            errorMsg.classList.add('animate__animated', 'animate__shakeX');
+        }
+
+        function showResult(data) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            
+            document.getElementById('resNama').innerText = data.nama;
+            document.getElementById('resNisn').innerText = "NISN: " + data.nisn;
+            document.getElementById('resMat').innerText = data.mat;
+            document.getElementById('resIndo').innerText = data.indo;
+            document.getElementById('resRata').innerText = data.rata;
+        }
+    </script>
+</body>
+</html>
